@@ -8,16 +8,29 @@ export interface VocabularyItem {
   partOfSpeech: string;
   collocation: string;
   example: string;
+  synonyms?: string[]; // Từ đồng nghĩa cấp cao (B2/C1)
+  antonyms?: string[]; // Từ trái nghĩa cấp cao (B2/C1)
+  inPassageSentence?: string; // Câu xuất hiện trong bài đọc
   audioText?: string;
 }
 
 export interface PracticeQuestion {
   id: string;
-  type: 'multiple-choice' | 'fill-blank' | 'matching' | 'collocation';
+  type: 'multiple-choice' | 'fill-blank' | 'matching' | 'collocation' | 'synonym' | 'antonym' | 'reading-comprehension';
+  category?: 'grammar' | 'vocabulary' | 'synonym' | 'antonym' | 'reading' | 'collocation';
+  passageExcerpt?: string; // Đoạn trích từ bài đọc để trả lời
   prompt: string;
   options?: string[];
   correctAnswer: string;
   explanation: string;
+}
+
+export interface ReadingPassage {
+  title: string;
+  topic: string;
+  fullText: string;
+  keyTakeaway: string;
+  vocabularyHighlights?: string[];
 }
 
 export interface BossQuestion {
@@ -42,6 +55,7 @@ export interface UnitRealm {
   bossTitle: string;
   bossHp: number;
   xpReward: number;
+  readingPassage?: ReadingPassage;
   vocabulary: VocabularyItem[];
   practice: PracticeQuestion[];
   bossQuestions: BossQuestion[];
@@ -88,6 +102,7 @@ export interface UserProfile {
   loveSentToday: number;
   badges: string[];
   completedUnits: { [unitId: string]: { completed: boolean; score: number; stars: number } };
+  hasCustomNickname?: boolean;
 }
 
 export interface Friend {

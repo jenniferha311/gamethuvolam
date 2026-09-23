@@ -4,6 +4,32 @@ import { PLAYER_AVATARS, getTitleForLevel } from '../data/characters';
 const STORAGE_KEY = 'phuong_chick_wulin_profile';
 const FRIENDS_KEY = 'phuong_chick_wulin_friends';
 const QUESTS_KEY = 'phuong_chick_wulin_quests';
+const ONBOARDED_KEY = 'phuong_chick_wulin_onboarded';
+
+export function hasOnboarded(): boolean {
+  if (typeof window === 'undefined') return true;
+  try {
+    const raw = localStorage.getItem(ONBOARDED_KEY);
+    if (raw === 'true') return true;
+    const profileRaw = localStorage.getItem(STORAGE_KEY);
+    if (profileRaw) {
+      const parsed = JSON.parse(profileRaw);
+      if (parsed.hasCustomNickname) return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+export function setOnboarded(status = true): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(ONBOARDED_KEY, status ? 'true' : 'false');
+  } catch {
+    // ignore
+  }
+}
 
 export function calculateLevel(xp: number): { level: number; currentXp: number; nextLevelXp: number } {
   let level = 1;
@@ -26,7 +52,7 @@ export function calculateLevel(xp: number): { level: number; currentXp: number; 
 
 export const INITIAL_PROFILE: UserProfile = {
   id: 'guest_' + Math.random().toString(36).substring(2, 9),
-  nickname: 'Lệnh Hồ Hiệp',
+  nickname: 'Hiệp Khách',
   grade: 10,
   avatar: PLAYER_AVATARS[0].image,
   avatarId: PLAYER_AVATARS[0].id,
@@ -42,7 +68,8 @@ export const INITIAL_PROFILE: UserProfile = {
   lastLoginDate: new Date().toISOString().split('T')[0],
   loveSentToday: 1,
   badges: ['Tân Thủ Giang Hồ'],
-  completedUnits: {}
+  completedUnits: {},
+  hasCustomNickname: false
 };
 
 export const INITIAL_FRIENDS: Friend[] = [

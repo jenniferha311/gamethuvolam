@@ -79,12 +79,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {level}
               </span>
             </div>
-            <div className="text-left hidden lg:block">
-              <div className="text-xs font-bold text-amber-200 truncate max-w-[110px]">
-                {profile.nickname}
+            <div className="text-left hidden sm:block">
+              <div className="text-xs font-bold text-amber-200 truncate max-w-[140px] flex items-center gap-1">
+                <span className="text-neutral-400 font-normal text-[11px]">Xin chào,</span>
+                <span className="text-amber-300 font-wuxia truncate">{profile.nickname}</span>
               </div>
-              <div className="text-[10px] text-red-300/80 truncate max-w-[110px]">
-                {profile.title}
+              <div className="text-[10px] text-red-300/80 truncate max-w-[140px]">
+                Hiệp khách • {profile.title}
               </div>
             </div>
           </div>

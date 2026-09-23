@@ -63,14 +63,14 @@ export const WorldMap: React.FC<WorldMapProps> = ({
               {stage.title}
             </h2>
             <p className="text-xs sm:text-sm text-neutral-300 font-serif-wuxia mt-1 max-w-2xl">
-              {stage.desc}
+              Hiệp khách <strong className="text-amber-300">{profile.nickname}</strong>: {stage.desc}
             </p>
           </div>
 
           <div className="flex items-center gap-2 bg-neutral-900/80 border border-neutral-700/60 px-4 py-2 rounded-xl">
             <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
             <div className="text-right">
-              <div className="text-xs font-bold text-neutral-200">Chiến Tích Đạt Được</div>
+              <div className="text-xs font-bold text-neutral-200">Chiến Tích Của {profile.nickname}</div>
               <div className="text-[11px] text-amber-300/80 font-mono">
                 {Object.values(profile.completedUnits || {}).filter(u => u.completed).length} / {units.length} Cửa Ải Đã Phá
               </div>

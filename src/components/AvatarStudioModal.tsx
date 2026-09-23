@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserProfile, PlayerAvatar } from '../types/game';
 import { PLAYER_AVATARS } from '../data/characters';
 import { X, Check, Sparkles, Shield, User, Heart } from 'lucide-react';
@@ -31,6 +31,15 @@ export const AvatarStudioModal: React.FC<AvatarStudioModalProps> = ({
   const [sect, setSect] = useState(profile.sect || SECTS[0]);
   const [grade, setGrade] = useState<10 | 11 | 12>(profile.grade);
 
+  useEffect(() => {
+    if (isOpen) {
+      setNickname(profile.nickname);
+      setSelectedAvatarId(profile.avatarId || PLAYER_AVATARS[0].id);
+      setSect(profile.sect || SECTS[0]);
+      setGrade(profile.grade);
+    }
+  }, [isOpen, profile]);
+
   if (!isOpen) return null;
 
   const currentAvatar = PLAYER_AVATARS.find((a) => a.id === selectedAvatarId) || PLAYER_AVATARS[0];
@@ -40,7 +49,7 @@ export const AvatarStudioModal: React.FC<AvatarStudioModalProps> = ({
     onUpdateProfile({
       avatar: currentAvatar.image,
       avatarId: currentAvatar.id,
-      nickname: nickname.trim() || 'Vô Danh Hiệp',
+      nickname: nickname.trim() || profile.nickname,
       sect,
       grade
     });

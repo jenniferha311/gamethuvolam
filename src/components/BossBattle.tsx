@@ -164,7 +164,10 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between text-xs font-bold text-amber-200">
-                <span>{profile.nickname}</span>
+                <span className="flex items-center gap-1 truncate max-w-[150px]">
+                  <span className="text-neutral-400 font-normal">Hiệp khách:</span>
+                  <span className="text-amber-300 font-wuxia">{profile.nickname}</span>
+                </span>
                 <span className="font-mono text-red-400">{playerHp} / 100 HP</span>
               </div>
               <div className="w-full h-3 bg-neutral-950 rounded-full overflow-hidden border border-neutral-800 my-1 p-0.5">
@@ -220,10 +223,10 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             🏆
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold font-wuxia text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-200 mb-2">
-            ĐẠI PHÁ {unit.bossName.toUpperCase()}!
+            CHÚC MỪNG {profile.nickname.toUpperCase()} ĐẠI PHÁ {unit.bossName.toUpperCase()}!
           </h2>
           <p className="text-sm text-neutral-300 font-serif-wuxia mb-6">
-            Thiếu hiệp dùng kiếm chiêu ngữ nghĩa trảm diệt yêu ma, giải cứu thanh bình cho {unit.realmName}!
+            Hiệp khách <strong className="text-amber-300 font-bold">{profile.nickname}</strong> đã dùng kiếm chiêu ngữ nghĩa trảm diệt yêu ma, giải cứu thanh bình cho {unit.realmName}!
           </p>
 
           {/* Stars & Rewards */}
@@ -265,7 +268,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             TẨU HỎA NHẬP MA!
           </h2>
           <p className="text-sm text-neutral-300 font-serif-wuxia mb-6">
-            Sinh lực đã cạn kiệt trước ma khí của {unit.bossName}. Hãy tịnh dưỡng, rèn lại từ vựng tại Tàng Kinh Các rồi trở lại tái chiến!
+            Hiệp khách <strong className="text-amber-300">{profile.nickname}</strong> đã cạn kiệt sinh lực trước ma khí của {unit.bossName}. Hãy tịnh dưỡng, rèn lại khẩu quyết tại Tàng Kinh Các rồi trở lại tái chiến!
           </p>
 
           <div className="flex items-center justify-center gap-4">

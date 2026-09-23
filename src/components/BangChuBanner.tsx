@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BANG_CHU } from '../data/characters';
+import { UserProfile } from '../types/game';
 import { Volume2, Sparkles, Sword, Play } from 'lucide-react';
 import { soundEffects } from '../lib/audio';
 
@@ -7,12 +8,14 @@ interface BangChuBannerProps {
   onStartLearning: () => void;
   grade: 10 | 11 | 12;
   onSelectGrade: (grade: 10 | 11 | 12) => void;
+  profile: UserProfile;
 }
 
 export const BangChuBanner: React.FC<BangChuBannerProps> = ({
   onStartLearning,
   grade,
-  onSelectGrade
+  onSelectGrade,
+  profile
 }) => {
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -90,7 +93,7 @@ export const BangChuBanner: React.FC<BangChuBannerProps> = ({
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               Minh Chủ Võ Lâm Anh Ngữ
             </span>
-            <span className="text-xs text-amber-400/80 font-mono">
+            <span className="text-xs text-amber-400/80 font-mono hidden sm:inline">
               Chương trình THPT Chuẩn Global Success
             </span>
           </div>
@@ -106,7 +109,7 @@ export const BangChuBanner: React.FC<BangChuBannerProps> = ({
           {/* Bang Chu Interactive Speech Bubble */}
           <div className="relative bg-[#1f1115]/90 border border-red-700/60 rounded-xl p-4 sm:p-5 shadow-lg mb-6 backdrop-blur-sm">
             <div className="absolute -top-3 left-6 bg-red-800 text-amber-200 text-[10px] font-bold px-2 py-0.5 rounded border border-red-500 flex items-center gap-1">
-              <span>📜</span> Lời Dặn Của Bang Chủ
+              <span>📜</span> Lời Dặn Của Bang Chủ Dành Cho {profile.nickname}
             </div>
             
             <p className="text-sm sm:text-base text-neutral-100 font-serif-wuxia leading-relaxed pt-1">

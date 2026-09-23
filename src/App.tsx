@@ -7,7 +7,9 @@ import {
   getFriends,
   saveFriends,
   getQuests,
-  saveQuests
+  saveQuests,
+  hasOnboarded,
+  setOnboarded
 } from './lib/storage';
 import { soundEffects } from './lib/audio';
 
@@ -25,6 +27,7 @@ import { DailyQuestsModal } from './components/DailyQuestsModal';
 import { LeaderboardModal } from './components/LeaderboardModal';
 import { SupabaseModal } from './components/SupabaseModal';
 import { ProfileModal } from './components/ProfileModal';
+import { WelcomeNicknameModal } from './components/WelcomeNicknameModal';
 
 export default function App() {
   const [profile, setProfile] = useState<UserProfile>(getProfile);
@@ -43,6 +46,7 @@ export default function App() {
   const [isQuestsOpen, setIsQuestsOpen] = useState(false);
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
   const [isSupabaseOpen, setIsSupabaseOpen] = useState(false);
+  const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState<boolean>(() => !hasOnboarded());
 
   // Sync profile to local storage whenever updated
   useEffect(() => {
@@ -66,6 +70,29 @@ export default function App() {
       }
       return next;
     });
+  };
+
+  const handleSaveWelcomeNickname = (nickname: string) => {
+    const updated = {
+      ...profile,
+      nickname,
+      hasCustomNickname: true
+    };
+    setProfile(updated);
+    saveProfile(updated);
+    setOnboarded(true);
+    setIsWelcomeModalOpen(false);
+  };
+
+  const handleUpdateNickname = (newNickname: string) => {
+    const updated = {
+      ...profile,
+      nickname: newNickname,
+      hasCustomNickname: true
+    };
+    setProfile(updated);
+    saveProfile(updated);
+    setOnboarded(true);
   };
 
   const handleToggleMute = () => {
@@ -208,6 +235,7 @@ export default function App() {
               }}
               grade={selectedGrade}
               onSelectGrade={(g) => setSelectedGrade(g)}
+              profile={profile}
             />
 
             {/* Five Guardians of English Wulin */}
@@ -227,6 +255,7 @@ export default function App() {
             unit={selectedUnit}
             onProceedToPractice={() => setCurrentView('practice')}
             onBackToMap={() => setCurrentView('map')}
+            profile={profile}
           />
         )}
 
@@ -236,6 +265,7 @@ export default function App() {
             onProceedToBoss={() => setCurrentView('boss')}
             onBackToFlashcards={() => setCurrentView('flashcards')}
             onAddXp={handleAddXp}
+            profile={profile}
           />
         )}
 
@@ -279,6 +309,7 @@ export default function App() {
         onClose={() => setIsProfileOpen(false)}
         profile={profile}
         onOpenAvatarStudio={() => setIsAvatarStudioOpen(true)}
+        onUpdateNickname={handleUpdateNickname}
       />
 
       <FriendsModal
@@ -307,6 +338,17 @@ export default function App() {
       <SupabaseModal
         isOpen={isSupabaseOpen}
         onClose={() => setIsSupabaseOpen(false)}
+      />
+
+      {/* Cửa sổ đặt tên & Điều hướng nhanh */}
+      <WelcomeNicknameModal
+        isOpen={isWelcomeModalOpen}
+        onClose={() => setIsWelcomeModalOpen(false)}
+        onSaveNickname={handleSaveWelcomeNickname}
+        initialNickname={profile.nickname}
+        onSelectGrade={(g) => setSelectedGrade(g)}
+        onOpenQuests={() => setIsQuestsOpen(true)}
+        onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
       />
     </div>
   );

@@ -52,6 +52,33 @@ class WuxiaSoundEffects {
     }
   }
 
+  // Card flip / parchment rustle sound
+  public playCardFlip() {
+    if (this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.exponentialRampToValueAtTime(660, now + 0.1);
+
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.14);
+    } catch {
+      // Audio error ignored
+    }
+  }
+
   // Critical hit impact (Gong + dual frequency metallic clash)
   public playCriticalHit() {
     if (this.isMuted) return;

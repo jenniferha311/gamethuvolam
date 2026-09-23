@@ -60,17 +60,17 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
             </div>
             <div>
               <div className="text-xs font-bold text-amber-200">
-                Vị Trí Hiện Tại Của Bạn: <span className="text-amber-400 font-mono text-sm">#{userRank}</span>
+                Vị Trí Của {profile.nickname}: <span className="text-amber-400 font-mono text-sm">#{userRank}</span>
               </div>
               <div className="text-[11px] text-neutral-300 font-serif-wuxia mt-0.5">
                 {entryAhead ? (
                   <span>
-                    Chỉ còn <strong className="text-yellow-400 font-mono">{xpDifference} XP</strong> để vượt qua cao thủ{' '}
+                    Chỉ còn <strong className="text-yellow-400 font-mono">{xpDifference} XP</strong> để <strong className="text-amber-300">{profile.nickname}</strong> vượt qua cao thủ{' '}
                     <strong className="text-neutral-100 font-wuxia">{entryAhead.nickname}</strong> (#{userRank - 1})!
                   </span>
                 ) : (
                   <span className="text-emerald-400 font-bold">
-                    Thiếu hiệp đang độc cô cầu bại, ngự trị tại ngôi đầu bảng!
+                    Hiệp khách {profile.nickname} đang độc cô cầu bại, ngự trị tại ngôi đầu bảng!
                   </span>
                 )}
               </div>

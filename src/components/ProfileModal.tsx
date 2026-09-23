@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { UserProfile } from '../types/game';
 import { calculateLevel } from '../lib/storage';
-import { X, Award, Shield, Heart, Flame, Star, Sparkles, Edit3 } from 'lucide-react';
+import { X, Award, Shield, Heart, Flame, Star, Sparkles, Edit3, Check, AlertCircle } from 'lucide-react';
 import { soundEffects } from '../lib/audio';
 
 interface ProfileModalProps {
@@ -9,6 +9,7 @@ interface ProfileModalProps {
   onClose: () => void;
   profile: UserProfile;
   onOpenAvatarStudio: () => void;
+  onUpdateNickname: (newNickname: string) => void;
 }
 
 const ALL_AVAILABLE_BADGES = [
@@ -24,12 +25,44 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   isOpen,
   onClose,
   profile,
-  onOpenAvatarStudio
+  onOpenAvatarStudio,
+  onUpdateNickname
 }) => {
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [newName, setNewName] = useState(profile.nickname);
+  const [nameError, setNameError] = useState('');
+
   if (!isOpen) return null;
 
   const { level, currentXp, nextLevelXp } = calculateLevel(profile.xp);
   const xpPercent = Math.min(100, Math.round((currentXp / nextLevelXp) * 100));
+
+  const handleStartEdit = () => {
+    setNewName(profile.nickname);
+    setNameError('');
+    setIsEditingName(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingName(false);
+    setNameError('');
+    setNewName(profile.nickname);
+  };
+
+  const handleSaveName = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const trimmed = newName.trim();
+    if (!trimmed) {
+      setNameError('Hãy nhập tên của bạn trước nhé!');
+      soundEffects.playDamageTaken();
+      return;
+    }
+
+    onUpdateNickname(trimmed);
+    soundEffects.playVictoryFanfare();
+    setIsEditingName(false);
+    setNameError('');
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
@@ -62,15 +95,71 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             </button>
           </div>
 
-          <div className="flex-1">
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
-              <h2 className="text-2xl font-bold font-wuxia text-amber-200">
-                {profile.nickname}
-              </h2>
-              <span className="px-2 py-0.5 rounded bg-red-950 border border-red-700 text-red-300 font-mono text-xs">
-                {profile.title}
-              </span>
-            </div>
+          <div className="flex-1 w-full">
+            {/* Nickname display or inline editing */}
+            {!isEditingName ? (
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mb-1.5">
+                <span className="text-xs text-neutral-400 font-mono">Hiệp khách:</span>
+                <h2 className="text-2xl font-bold font-wuxia text-amber-200">
+                  {profile.nickname}
+                </h2>
+                <span className="px-2 py-0.5 rounded bg-red-950 border border-red-700 text-red-300 font-mono text-xs">
+                  {profile.title}
+                </span>
+
+                {/* Prominent "Đổi tên" button */}
+                <button
+                  onClick={handleStartEdit}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold font-mono bg-neutral-900 hover:bg-neutral-800 text-amber-300 border border-amber-500/50 hover:border-amber-400 transition-colors shadow-sm cursor-pointer"
+                  title="Đổi tên / Nickname của bạn"
+                >
+                  <Edit3 className="w-3 h-3 text-amber-400" />
+                  <span>Đổi tên</span>
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleSaveName} className="mb-3 p-3 rounded-xl bg-neutral-900/90 border border-amber-500/70 text-left">
+                <label className="text-[11px] font-bold text-amber-300 uppercase tracking-wider block mb-1 font-mono">
+                  Tên/Nickname mới của bạn:
+                </label>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <input
+                    type="text"
+                    autoFocus
+                    value={newName}
+                    maxLength={24}
+                    onChange={(e) => {
+                      setNewName(e.target.value);
+                      if (nameError) setNameError('');
+                    }}
+                    placeholder="Nhập tên mới của bạn..."
+                    className="flex-1 px-3 py-1.5 rounded-lg bg-black/60 border border-amber-500/60 text-sm text-amber-100 focus:outline-none focus:border-amber-400 font-medium"
+                  />
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="submit"
+                      className="flex-1 sm:flex-none px-3 py-1.5 rounded-lg bg-gradient-to-r from-red-700 to-amber-600 hover:from-red-600 hover:to-amber-500 text-amber-100 text-xs font-bold font-wuxia border border-amber-400 cursor-pointer shadow"
+                    >
+                      Lưu tên
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCancelEdit}
+                      className="px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-xs border border-neutral-600 cursor-pointer"
+                    >
+                      Hủy
+                    </button>
+                  </div>
+                </div>
+
+                {nameError && (
+                  <div className="flex items-center gap-1 text-[11px] text-red-400 mt-1.5">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>{nameError}</span>
+                  </div>
+                )}
+              </form>
+            )}
 
             <p className="text-xs text-neutral-400 font-serif-wuxia mb-3">
               Môn phái: <strong className="text-amber-300">{profile.sect}</strong> • Tu luyện:{' '}
@@ -78,7 +167,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             </p>
 
             {/* Công Lực Bar */}
-            <div className="max-w-md">
+            <div className="max-w-md mx-auto sm:mx-0">
               <div className="flex justify-between text-xs text-neutral-300 mb-1 font-mono">
                 <span className="text-amber-400 font-bold">Cấp Độ {level}</span>
                 <span>{currentXp} / {nextLevelXp} XP</span>
