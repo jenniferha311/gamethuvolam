@@ -468,7 +468,7 @@ export const UNITS_GRADE_12: UnitRealm[] = [
       },
       {
         id: 'b12-2-3',
-        question: 'Chọn câu diễn tả đúng sứ mệnh của Bang Chủ Hà Ánh Phượng:',
+        question: 'Chọn câu diễn tả đúng sứ mệnh của Hồng Y Tông Chủ Hà Ánh Phượng:',
         options: [
           'English is a bridge connecting Vietnamese culture to the entire world.',
           'Education must remain isolated within a single village.',

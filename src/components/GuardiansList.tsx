@@ -13,7 +13,7 @@ export const GuardiansList: React.FC = () => {
             NGŨ ĐẠI HỘ PHÁP VÕ LÂM
           </h2>
           <p className="text-xs sm:text-sm text-neutral-400 font-serif-wuxia">
-            Năm vị đại cao thủ trấn giữ ngũ hành tri thức, đồng hành cùng Bang Chủ Hà Ánh Phượng
+            Năm vị đại cao thủ trấn giữ ngũ hành tri thức, đồng hành cùng Hồng Y Tông Chủ Hà Ánh Phượng
           </p>
         </div>
       </div>

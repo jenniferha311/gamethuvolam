@@ -49,10 +49,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <span className="font-wuxia font-extrabold text-sm sm:text-base text-red-100 tracking-wider group-hover:text-amber-300 transition-colors">
-                PHƯƠNG CHICK ENGLISH WULIN
+                GLOBAL SUCCESS ENGLISH WULIN
               </span>
               <span className="hidden md:inline-block text-[10px] bg-red-900/60 text-red-200 border border-red-700/50 px-2 py-0.5 rounded font-mono">
-                Global Success
+                THPT 10 - 11 - 12
               </span>
             </div>
             <p className="text-[11px] text-amber-500/90 font-serif-wuxia tracking-wide hidden sm:block">

@@ -41,7 +41,7 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
             Khổ Luyện Thành Danh
           </h2>
           <p className="text-xs sm:text-sm text-neutral-300 font-serif-wuxia mt-1">
-            <strong className="text-amber-300">{profile.nickname}</strong>, nhiệm vụ tiếp theo của bạn đã sẵn sàng! Mỗi ngày hoàn thành các huấn lệnh từ Bang Chủ để gia tăng công lực.
+            <strong className="text-amber-300">{profile.nickname}</strong>, nhiệm vụ tiếp theo của bạn đã sẵn sàng! Mỗi ngày hoàn thành các huấn lệnh từ Hồng Y Tông Chủ để gia tăng công lực.
           </p>
         </div>
 

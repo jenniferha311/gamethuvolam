@@ -227,7 +227,7 @@ export default function App() {
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6 sm:px-6">
         {currentView === 'map' && (
           <>
-            {/* Bang Chu Ms. Ha Anh Phuong Hero Banner */}
+            {/* Hong Y Tong Chu Ms. Ha Anh Phuong Hero Banner */}
             <BangChuBanner
               onStartLearning={() => {
                 const firstUnit = UNITS_DATA.find((u) => u.grade === selectedGrade) || UNITS_DATA[0];
@@ -284,7 +284,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="font-wuxia font-bold text-neutral-300">
-              PHƯƠNG CHICK ENGLISH WULIN
+              GLOBAL SUCCESS ENGLISH WULIN
             </span>
             <span className="text-[10px] text-amber-500/80 font-serif-wuxia">
               • Tam Niên Anh Ngữ – Nhất Thống Võ Lâm

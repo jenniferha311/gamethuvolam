@@ -7,7 +7,7 @@ interface SupabaseModalProps {
 }
 
 const SUPABASE_SQL_SCHEMA = `-- ==========================================
--- PHUONG CHICK ENGLISH WULIN - SUPABASE DDL
+-- GLOBAL SUCCESS ENGLISH WULIN - SUPABASE DDL
 -- Master schema: profiles, progress, friendships, love_logs, badges, daily_quests
 -- ==========================================
 

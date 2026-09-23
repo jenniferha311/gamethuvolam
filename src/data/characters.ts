@@ -1,5 +1,5 @@
 import bangChuImg from '@/src/assets/images/bang_chu_ha_anh_phuong_1790160299522.jpg';
-import dangTranHaImg from '@/src/assets/images/guardian_dang_tran_ha_1790160315965.jpg';
+import dangTranHaImg from '@/src/assets/images/guardian_dang_tran_ha_v2_1790182956030.jpg';
 import lienPhamImg from '@/src/assets/images/guardian_lien_pham_1790160328956.jpg';
 import phuongTuImg from '@/src/assets/images/guardian_phuong_tu_1790160342836.jpg';
 import nguyetNguyenImg from '@/src/assets/images/guardian_nguyet_nguyen_1790160358617.jpg';
@@ -11,17 +11,17 @@ import { Guardian, PlayerAvatar } from '../types/game';
 
 export const BANG_CHU = {
   name: 'Hà Ánh Phượng',
-  title: 'Bang Chủ English Wulin',
-  honorific: 'Cô Phượng Chick',
+  title: 'Hồng Y Tông Chủ',
+  honorific: 'Hồng Y Tông Chủ Hà Ánh Phượng',
   signatureColor: 'Crimson Red & Midnight Black',
   weapon: 'Thanh Phong Bảo Kiếm',
   image: bangChuImg,
-  description: 'Nữ hiệp kiêm Bang chủ uy chấn thiên hạ, khoác chiến bào xích diễm lộng lẫy, tay cầm bảo kiếm, ánh mắt uy nghiêm mà ấm áp. Người dẫn lối cho vạn hiệp khách chinh phục đỉnh cao Anh ngữ.',
+  description: 'Hồng Y Tông Chủ uy chấn thiên hạ, khoác chiến bào xích diễm lộng lẫy, tay cầm Thanh Phong bảo kiếm, ánh mắt uy nghiêm mà nhân hậu. Người sáng lập tông môn và dẫn lối cho vạn hiệp khách chinh phục đỉnh cao Anh ngữ.',
   quotes: [
-    'Chào mừng thiếu hiệp bước vào English Wulin! Giang hồ hiểm trở, nhưng chí khí Anh ngữ của ta là bất diệt!',
+    'Chào mừng thiếu hiệp bước vào English Wulin! Giang hồ hiểm trở, nhưng chí khí Anh ngữ của Hồng Y Tông Môn ta là bất diệt!',
     'Muốn xưng bá võ lâm Anh ngữ, trước tiên phải luyện vững căn cơ từ vựng!',
     'Ngộ tính không tệ! Một đòn xuất chiêu sắc bén, đã phá giải toàn bộ chướng ngại!',
-    'Cô Phượng Chick bảo cậu nên luyện thêm một chút nữa nhé, kiên trì ắt thành đại nghiệp!',
+    'Hồng Y Tông Chủ dặn dò: Hãy kiên trì rèn luyện mỗi ngày, đại nghiệp ắt thành!',
     'Vạn kiếm quy tông, tri thức hội tụ! Hãy tiến lên tầng cao mới của giang hồ!'
   ]
 };
@@ -36,7 +36,7 @@ export const GUARDIANS: Guardian[] = [
     colorHex: '#1e3a8a',
     image: dangTranHaImg,
     quote: 'Ngữ pháp tựa như kinh mạch của võ học. Kinh mạch thông suốt, chiêu thức mới uy lực.',
-    description: 'Bạch diện thư sinh điềm tĩnh mang kính tri thức, khoác lam y thêu bạc, chưởng quản các thử thách cú pháp và logic biện luận.'
+    description: 'Võ học tông sư trung niên điềm tĩnh, mái tóc điểm sương đốm bạc toát lên vẻ uyên bác trác tuyệt, khoác lam y thêu bạc, chưởng quản các thử thách cú pháp và logic biện luận uyên thâm.'
   },
   {
     id: 'guardian-lien-pham',
@@ -107,10 +107,10 @@ export const PLAYER_AVATARS: PlayerAvatar[] = [
     id: 'avatar-bang-chu-disciple',
     name: 'Xích Vũ Chân Truyền',
     gender: 'female',
-    title: 'Chân Truyền Đệ Tử Phượng Chick',
+    title: 'Chân Truyền Đệ Tử Hồng Y Tông Chủ',
     image: bangChuImg,
-    sect: 'English Wulin Tông Môn',
-    description: 'Đệ tử chân truyền của Bang Chủ Hà Ánh Phượng, mang phong thái uy nghi, nhiệt huyết bảo vệ chính đạo võ lâm.'
+    sect: 'Hồng Y Tông Môn',
+    description: 'Đệ tử chân truyền của Hồng Y Tông Chủ Hà Ánh Phượng, mang phong thái uy nghi, nhiệt huyết bảo vệ chính đạo võ lâm.'
   },
   {
     id: 'avatar-scholar-guardian',

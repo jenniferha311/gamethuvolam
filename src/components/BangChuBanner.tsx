@@ -75,7 +75,7 @@ export const BangChuBanner: React.FC<BangChuBannerProps> = ({
               {/* Badge on Image */}
               <div className="absolute bottom-2 left-2 right-2 text-center bg-red-950/80 backdrop-blur-sm border border-red-700/60 rounded-md py-1 px-2">
                 <p className="text-xs font-bold text-amber-300 font-wuxia tracking-wider">
-                  BANG CHỦ HÀ ÁNH PHƯỢNG
+                  HỒNG Y TÔNG CHỦ HÀ ÁNH PHƯỢNG
                 </p>
                 <p className="text-[10px] text-red-200 font-serif-wuxia">
                   {BANG_CHU.weapon} • {BANG_CHU.signatureColor}
@@ -91,7 +91,7 @@ export const BangChuBanner: React.FC<BangChuBannerProps> = ({
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-900/80 text-amber-200 border border-red-600 shadow">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              Minh Chủ Võ Lâm Anh Ngữ
+              Hồng Y Tông Chủ Võ Lâm
             </span>
             <span className="text-xs text-amber-400/80 font-mono hidden sm:inline">
               Chương trình THPT Chuẩn Global Success
@@ -99,7 +99,7 @@ export const BangChuBanner: React.FC<BangChuBannerProps> = ({
           </div>
 
           <h1 className="text-2xl sm:text-4xl font-extrabold font-wuxia text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-300 to-red-400 tracking-wide mb-2 leading-tight">
-            PHƯƠNG CHICK ENGLISH WULIN
+            GLOBAL SUCCESS ENGLISH WULIN
           </h1>
 
           <p className="text-sm sm:text-base text-amber-200/90 font-serif-wuxia italic mb-4">
@@ -109,7 +109,7 @@ export const BangChuBanner: React.FC<BangChuBannerProps> = ({
           {/* Bang Chu Interactive Speech Bubble */}
           <div className="relative bg-[#1f1115]/90 border border-red-700/60 rounded-xl p-4 sm:p-5 shadow-lg mb-6 backdrop-blur-sm">
             <div className="absolute -top-3 left-6 bg-red-800 text-amber-200 text-[10px] font-bold px-2 py-0.5 rounded border border-red-500 flex items-center gap-1">
-              <span>📜</span> Lời Dặn Của Bang Chủ Dành Cho {profile.nickname}
+              <span>📜</span> Lời Dặn Của Hồng Y Tông Chủ Dành Cho {profile.nickname}
             </div>
             
             <p className="text-sm sm:text-base text-neutral-100 font-serif-wuxia leading-relaxed pt-1">
