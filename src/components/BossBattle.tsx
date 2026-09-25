@@ -1,13 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { UnitRealm, UserProfile, BossQuestion } from '../types/game';
 import { soundEffects } from '../lib/audio';
-import { Skull, Shield, Sword, Heart, Star, Award, RotateCcw, ArrowRight, Zap } from 'lucide-react';
+import { Skull, Shield, Sword, Heart, Star, Award, RotateCcw, ArrowRight, Zap, Clock, AlertCircle } from 'lucide-react';
+import { recordQuestionResult } from '../lib/analytics';
 
 interface BossBattleProps {
   unit: UnitRealm;
   profile: UserProfile;
   onVictory: (unitId: string, stars: number, xpGained: number) => void;
   onBackToMap: () => void;
+}
+
+const BOSS_TURN_TIME = 22; // 22s combat decision timer
+
+function shuffleArray<T>(items: T[]): T[] {
+  const arr = [...items];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
 }
 
 export const BossBattle: React.FC<BossBattleProps> = ({
@@ -21,19 +33,136 @@ export const BossBattle: React.FC<BossBattleProps> = ({
   const [currentIdx, setCurrentIdx] = useState(0);
   const [combo, setCombo] = useState(0);
   const [isAnswered, setIsAnswered] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [slashActive, setSlashActive] = useState(false);
   const [screenShake, setScreenShake] = useState(false);
   const [floatingDamage, setFloatingDamage] = useState<{ text: string; isCrit: boolean } | null>(null);
   const [battleFinished, setBattleFinished] = useState<'victory' | 'defeat' | null>(null);
+  const [timeLeft, setTimeLeft] = useState(BOSS_TURN_TIME);
+
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const questions: BossQuestion[] = unit.bossQuestions;
   const currentQ = questions[currentIdx % questions.length];
 
-  const handleSelectOption = (idx: number) => {
+  // Randomized options and dynamic correct index
+  const [shuffledData, setShuffledData] = useState<{
+    options: string[];
+    correctIndex: number;
+  }>(() => {
+    if (!currentQ) return { options: [], correctIndex: 0 };
+    const correctText = currentQ.options[currentQ.correctAnswer];
+    const shuffled = shuffleArray(currentQ.options);
+    return {
+      options: shuffled,
+      correctIndex: shuffled.indexOf(correctText)
+    };
+  });
+
+  // Re-shuffle whenever turn or question changes
+  useEffect(() => {
+    if (!currentQ) return;
+    const correctText = currentQ.options[currentQ.correctAnswer];
+    const shuffled = shuffleArray(currentQ.options);
+    setShuffledData({
+      options: shuffled,
+      correctIndex: shuffled.indexOf(correctText)
+    });
+    setIsAnswered(false);
+    setIsProcessing(false);
+    setTimeLeft(BOSS_TURN_TIME);
+  }, [currentIdx, currentQ]);
+
+  // Turn combat countdown timer
+  useEffect(() => {
+    if (battleFinished) return;
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    if (!isAnswered && !isProcessing) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            if (timerRef.current) clearInterval(timerRef.current);
+            handleTimeExpired();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [currentIdx, isAnswered, isProcessing, battleFinished]);
+
+  const handleTimeExpired = () => {
     if (isAnswered || battleFinished) return;
+    setIsProcessing(true);
+    setScreenShake(true);
+    soundEffects.playDamageTaken();
+
+    const playerDmg = 25;
+    const nextPlayerHp = Math.max(0, playerHp - playerDmg);
+    setPlayerHp(nextPlayerHp);
+    setCombo(0);
+
+    setFloatingDamage({
+      text: `QUÁ GIỜ XUẤT CHIÊU! -${playerDmg} HP`,
+      isCrit: false
+    });
+
+    recordQuestionResult(false, {
+      id: currentQ.id,
+      prompt: currentQ.question,
+      options: currentQ.options,
+      correctAnswer: currentQ.options[currentQ.correctAnswer],
+      grade: unit.grade,
+      unitId: unit.id,
+      unitTitle: unit.realmName
+    });
+
+    setTimeout(() => {
+      setScreenShake(false);
+      setFloatingDamage(null);
+      setIsAnswered(true);
+      setIsProcessing(false);
+
+      if (nextPlayerHp <= 0) {
+        setBattleFinished('defeat');
+      }
+    }, 900);
+  };
+
+  const handleSelectOption = (idx: number) => {
+    if (isAnswered || isProcessing || battleFinished) return;
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    setIsProcessing(true);
     setIsAnswered(true);
 
-    const isCorrect = idx === currentQ.correctAnswer;
+    const isCorrect = idx === shuffledData.correctIndex;
+
+    recordQuestionResult(isCorrect, {
+      id: currentQ.id,
+      prompt: currentQ.question,
+      options: currentQ.options,
+      correctAnswer: currentQ.options[currentQ.correctAnswer],
+      grade: unit.grade,
+      unitId: unit.id,
+      unitTitle: unit.realmName
+    });
 
     if (isCorrect) {
       // Player attack success!
@@ -45,7 +174,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       const totalDmg = isCrit ? Math.round(baseDmg * 1.5) : baseDmg;
 
       setFloatingDamage({
-        text: isCrit ? `CRITICAL HIT! -${totalDmg} HP` : `-${totalDmg} HP`,
+        text: isCrit ? `CHÍ MẠNG KIẾM KHÍ! -${totalDmg} HP` : `-${totalDmg} HP`,
         isCrit
       });
 
@@ -56,6 +185,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       setTimeout(() => {
         setSlashActive(false);
         setFloatingDamage(null);
+        setIsProcessing(false);
 
         if (nextBossHp <= 0) {
           // Boss Defeated!
@@ -81,6 +211,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       setTimeout(() => {
         setScreenShake(false);
         setFloatingDamage(null);
+        setIsProcessing(false);
 
         if (nextPlayerHp <= 0) {
           setBattleFinished('defeat');
@@ -91,10 +222,11 @@ export const BossBattle: React.FC<BossBattleProps> = ({
 
   const handleNextTurn = () => {
     setIsAnswered(false);
+    setIsProcessing(false);
     if (currentIdx < questions.length - 1) {
       setCurrentIdx(currentIdx + 1);
     } else {
-      // Loop if boss is still alive
+      // Loop questions if boss still has HP
       setCurrentIdx(0);
     }
   };
@@ -119,7 +251,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={onBackToMap}
-          className="text-xs text-neutral-400 hover:text-amber-300 transition-colors"
+          className="text-xs text-neutral-400 hover:text-amber-300 transition-colors cursor-pointer"
         >
           ← Rút Lui Về Bản Đồ
         </button>
@@ -279,14 +411,14 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                 setBattleFinished(null);
                 setCurrentIdx(0);
               }}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl font-wuxia font-bold text-sm text-amber-200 bg-red-950 border border-red-700 hover:bg-red-900"
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-wuxia font-bold text-sm text-amber-200 bg-red-950 border border-red-700 hover:bg-red-900 cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
               <span>Quyết Chiến Lại</span>
             </button>
             <button
               onClick={onBackToMap}
-              className="px-6 py-3 rounded-xl font-wuxia text-sm text-neutral-300 bg-neutral-900 border border-neutral-700 hover:bg-neutral-800"
+              className="px-6 py-3 rounded-xl font-wuxia text-sm text-neutral-300 bg-neutral-900 border border-neutral-700 hover:bg-neutral-800 cursor-pointer"
             >
               Về Tịnh Dưỡng
             </button>
@@ -295,22 +427,27 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       ) : (
         /* Active Combat Turn */
         <div className="wuxia-card rounded-2xl p-6 sm:p-8 text-left border border-neutral-700 shadow-2xl">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-mono text-amber-400 uppercase tracking-wider">
-              Trận Khảo Sát Số {currentIdx + 1}
+          {/* Turn timer */}
+          <div className="flex items-center justify-between mb-3 text-xs font-mono">
+            <span className="text-neutral-400">
+              Trận Khảo Sát Số {currentIdx + 1} • Sát thương kiếm chiêu: <strong className="text-amber-300">+{currentQ.damage} DMG</strong>
             </span>
-            <span className="text-xs text-neutral-400">
-              Sát thương kiếm chiêu: <strong className="text-amber-300 font-mono">+{currentQ.damage} DMG</strong>
-            </span>
+            <div className="flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-amber-400" />
+              <span className={`font-bold ${timeLeft <= 5 ? 'text-red-400 animate-pulse' : 'text-amber-300'}`}>
+                {timeLeft}s
+              </span>
+            </div>
           </div>
 
           <h3 className="text-lg sm:text-xl font-bold text-white font-serif-wuxia leading-relaxed mb-6">
             {currentQ.question}
           </h3>
 
+          {/* Shuffled Options (Randomized order A, B, C, D) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-            {currentQ.options.map((opt, idx) => {
-              const isCorrect = idx === currentQ.correctAnswer;
+            {shuffledData.options.map((opt, idx) => {
+              const isCorrect = idx === shuffledData.correctIndex;
               let style = 'bg-neutral-900/90 border-neutral-700 text-neutral-200 hover:border-amber-400 hover:bg-neutral-800';
 
               if (isAnswered) {
@@ -324,11 +461,13 @@ export const BossBattle: React.FC<BossBattleProps> = ({
               return (
                 <button
                   key={idx}
-                  disabled={isAnswered}
+                  disabled={isAnswered || isProcessing}
                   onClick={() => handleSelectOption(idx)}
-                  className={`p-4 rounded-xl border text-left transition-all duration-200 flex items-center gap-3 text-sm sm:text-base cursor-pointer ${style}`}
+                  className={`p-4 rounded-xl border text-left transition-all duration-200 flex items-center gap-3 text-sm sm:text-base ${
+                    isAnswered || isProcessing ? 'cursor-default' : 'cursor-pointer'
+                  } ${style}`}
                 >
-                  <span className="w-6 h-6 rounded-md bg-black/40 border border-white/10 flex items-center justify-center text-xs font-mono font-bold text-amber-300">
+                  <span className="w-6 h-6 rounded-md bg-black/40 border border-white/10 flex items-center justify-center text-xs font-mono font-bold text-amber-300 shrink-0">
                     {String.fromCharCode(65 + idx)}
                   </span>
                   <span>{opt}</span>
@@ -345,11 +484,11 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             </div>
           )}
 
-          {isAnswered && (
+          {isAnswered && !battleFinished && (
             <div className="text-right">
               <button
                 onClick={handleNextTurn}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-wuxia font-bold text-xs sm:text-sm text-amber-200 bg-red-900 hover:bg-red-800 border border-amber-500/60 cursor-pointer shadow-lg"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-wuxia font-bold text-xs sm:text-sm text-amber-200 bg-red-900 hover:bg-red-800 border border-amber-500/60 cursor-pointer shadow-lg active:scale-95"
               >
                 <span>Hồi Chiêu Kế Tiếp</span>
                 <ArrowRight className="w-4 h-4" />

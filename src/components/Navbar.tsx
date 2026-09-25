@@ -1,7 +1,7 @@
 import React from 'react';
 import { UserProfile } from '../types/game';
 import { calculateLevel } from '../lib/storage';
-import { Volume2, VolumeX, Flame, Heart, Award, Users, BookOpen, Sparkles, Database } from 'lucide-react';
+import { Volume2, VolumeX, Flame, Heart, Award, Users, BookOpen, Sparkles, Target } from 'lucide-react';
 import { soundEffects } from '../lib/audio';
 
 interface NavbarProps {
@@ -11,7 +11,8 @@ interface NavbarProps {
   onOpenFriends: () => void;
   onOpenQuests: () => void;
   onOpenLeaderboard: () => void;
-  onOpenSupabase: () => void;
+  onOpenWeakReview?: () => void;
+  onOpenSupabase?: () => void;
   onReturnToMap: () => void;
   isMuted: boolean;
   onToggleMute: () => void;
@@ -24,7 +25,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenFriends,
   onOpenQuests,
   onOpenLeaderboard,
-  onOpenSupabase,
+  onOpenWeakReview,
   onReturnToMap,
   isMuted,
   onToggleMute
@@ -34,16 +35,17 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-40 bg-[#0d0e14]/95 backdrop-blur-md border-b border-red-900/40 shadow-2xl">
-      <div className="max-w-7xl mx-auto px-4 py-2.5 sm:px-6 flex flex-wrap items-center justify-between gap-3">
+      <div className="max-w-7xl mx-auto px-4 py-2 sm:px-6 flex flex-wrap items-center justify-between gap-3">
         {/* Brand / Logo */}
         <div 
           onClick={onReturnToMap}
           className="flex items-center gap-3 cursor-pointer group transition-transform active:scale-95"
         >
-          <div className="relative w-10 h-10 rounded-full border-2 border-red-600 bg-red-950/80 flex items-center justify-center shadow-lg shadow-red-900/50 group-hover:border-amber-400 transition-colors">
-            <span className="text-xl">🗡️</span>
-            <div className="absolute -bottom-1 -right-1 bg-amber-600 text-black text-[9px] font-bold px-1 rounded-full border border-amber-300">
-              K{profile.grade}
+          <div className="relative w-10 h-10 rounded-full border-2 border-red-600 bg-gradient-to-br from-red-900 via-neutral-900 to-black flex items-center justify-center shadow-lg shadow-red-900/50 group-hover:border-amber-400 transition-colors">
+            <span className="text-xl select-none">🗡️</span>
+            {/* GS Logo Badge */}
+            <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-black text-[9px] font-black px-1.5 py-0.5 rounded-full border border-amber-200 shadow-md font-mono tracking-tighter leading-none flex items-center justify-center">
+              GS
             </div>
           </div>
           <div>
@@ -55,8 +57,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 THPT 10 - 11 - 12
               </span>
             </div>
-            <p className="text-[11px] text-amber-500/90 font-serif-wuxia tracking-wide hidden sm:block">
-              Tam Niên Anh Ngữ – Nhất Thống Võ Lâm
+            <p className="text-[11px] text-amber-400/90 font-serif-wuxia tracking-wide hidden sm:block">
+              Cảm hứng từ cô giáo HÀ ÁNH PHƯỢNG - khung chương trình THPT Global Success 10-11-12
             </p>
           </div>
         </div>
@@ -109,19 +111,19 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Sinh Lực (HP) */}
-          <div className="flex items-center gap-1 bg-red-950/60 border border-red-800/50 px-2 py-1 rounded text-[11px] text-red-200 font-mono">
+          <div className="flex items-center gap-1 bg-red-950/60 border border-red-800/50 px-2 py-1 rounded text-[11px] text-red-200 font-mono" title="Sinh Lực (HP)">
             <span className="text-red-400">❤️</span>
             <span>{profile.hp}</span>
           </div>
 
           {/* Nội Lực (Energy) */}
-          <div className="hidden md:flex items-center gap-1 bg-blue-950/60 border border-blue-800/50 px-2 py-1 rounded text-[11px] text-blue-200 font-mono">
+          <div className="hidden md:flex items-center gap-1 bg-blue-950/60 border border-blue-800/50 px-2 py-1 rounded text-[11px] text-blue-200 font-mono" title="Nội Lực (Energy)">
             <span className="text-blue-400">✨</span>
             <span>{profile.energy}/{profile.maxEnergy}</span>
           </div>
 
           {/* Chuỗi đăng nhập (Streak) */}
-          <div className="flex items-center gap-1 bg-amber-950/50 border border-amber-700/40 px-2 py-1 rounded text-[11px] text-amber-300 font-bold">
+          <div className="flex items-center gap-1 bg-amber-950/50 border border-amber-700/40 px-2 py-1 rounded text-[11px] text-amber-300 font-bold" title="Chuỗi ngày hành tẩu">
             <Flame className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
             <span>{profile.streak} ngày</span>
           </div>
@@ -129,6 +131,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Action Menu Buttons */}
         <div className="flex items-center gap-1.5 sm:gap-2 order-2 sm:order-3">
+          {/* Luyện Lại Điểm Yếu button */}
+          {onOpenWeakReview && (
+            <button
+              onClick={onOpenWeakReview}
+              className="flex items-center gap-1 bg-gradient-to-r from-rose-950 to-red-900 hover:from-rose-900 hover:to-red-800 text-rose-200 border border-rose-600/60 hover:border-rose-400 px-2.5 py-1.5 rounded-md text-xs font-semibold shadow-md transition-all active:scale-95"
+              title="Luyện Lại Điểm Yếu (Ôn câu sai)"
+            >
+              <Target className="w-3.5 h-3.5 text-rose-400" />
+              <span className="hidden lg:inline">Ôn Điểm Yếu</span>
+            </button>
+          )}
+
           {/* Avatar Studio */}
           <button
             onClick={onOpenAvatarStudio}
@@ -167,15 +181,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             title="Võ Lâm Cao Thủ (Xếp Hạng)"
           >
             <Award className="w-4 h-4 text-yellow-400" />
-          </button>
-
-          {/* Cloud Sync / Supabase */}
-          <button
-            onClick={onOpenSupabase}
-            className="flex items-center justify-center p-2 rounded-md bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-emerald-400 hover:text-emerald-300 transition-colors"
-            title="Kết Nối Supabase Cloud"
-          >
-            <Database className="w-4 h-4" />
           </button>
 
           {/* Sound Mute Toggle */}

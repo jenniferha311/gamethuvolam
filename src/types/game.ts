@@ -5,9 +5,11 @@ export interface VocabularyItem {
   word: string;
   ipa: string;
   meaningVi: string;
+  meaning?: string; // Alias for meaningVi
   partOfSpeech: string;
-  collocation: string;
+  collocation?: string;
   example: string;
+  exampleVi?: string; // Vietnamese translation of example
   synonyms?: string[]; // Từ đồng nghĩa cấp cao (B2/C1)
   antonyms?: string[]; // Từ trái nghĩa cấp cao (B2/C1)
   inPassageSentence?: string; // Câu xuất hiện trong bài đọc

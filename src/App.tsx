@@ -12,20 +12,21 @@ import {
   setOnboarded
 } from './lib/storage';
 import { soundEffects } from './lib/audio';
+import { trackVisit } from './lib/analytics';
 
 // Components
 import { Navbar } from './components/Navbar';
 import { BangChuBanner } from './components/BangChuBanner';
 import { GuardiansList } from './components/GuardiansList';
 import { WorldMap } from './components/WorldMap';
-import { Flashcards } from './components/Flashcards';
-import { PracticeArena } from './components/PracticeArena';
-import { BossBattle } from './components/BossBattle';
+import { UnitHub, UnitSection } from './components/UnitHub';
+import { WeakReviewArena } from './components/WeakReviewArena';
+import { AdminDashboard } from './components/AdminDashboard';
+import { AchievementToast, ToastData } from './components/AchievementToast';
 import { AvatarStudioModal } from './components/AvatarStudioModal';
 import { FriendsModal } from './components/FriendsModal';
 import { DailyQuestsModal } from './components/DailyQuestsModal';
 import { LeaderboardModal } from './components/LeaderboardModal';
-import { SupabaseModal } from './components/SupabaseModal';
 import { ProfileModal } from './components/ProfileModal';
 import { WelcomeNicknameModal } from './components/WelcomeNicknameModal';
 
@@ -34,8 +35,9 @@ export default function App() {
   const [friends, setFriends] = useState<Friend[]>(getFriends);
   const [quests, setQuests] = useState<DailyQuest[]>(getQuests);
 
-  const [currentView, setCurrentView] = useState<'map' | 'flashcards' | 'practice' | 'boss'>('map');
+  const [currentView, setCurrentView] = useState<'map' | 'unit-hub' | 'weak-review'>('map');
   const [selectedUnit, setSelectedUnit] = useState<UnitRealm>(UNITS_DATA[0]);
+  const [unitInitialSection, setUnitInitialSection] = useState<UnitSection>('vocab');
   const [selectedGrade, setSelectedGrade] = useState<10 | 11 | 12>(profile.grade || 10);
   const [isMuted, setIsMuted] = useState(false);
 
@@ -45,8 +47,28 @@ export default function App() {
   const [isFriendsOpen, setIsFriendsOpen] = useState(false);
   const [isQuestsOpen, setIsQuestsOpen] = useState(false);
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
-  const [isSupabaseOpen, setIsSupabaseOpen] = useState(false);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState<boolean>(() => !hasOnboarded());
+
+  // Non-intrusive achievement/congratulation toast
+  const [toastData, setToastData] = useState<ToastData | null>(null);
+
+  // Auto-track visit in background without blocking UI
+  useEffect(() => {
+    trackVisit(profile.id, profile.nickname, selectedGrade, currentView, selectedUnit?.id);
+  }, [profile.id, profile.nickname, selectedGrade, currentView, selectedUnit?.id]);
+
+  // Check URL hash for admin access
+  useEffect(() => {
+    const handleHash = () => {
+      if (window.location.hash === '#admin' || window.location.search.includes('admin=true')) {
+        setIsAdminOpen(true);
+      }
+    };
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
 
   // Sync profile to local storage whenever updated
   useEffect(() => {
@@ -101,9 +123,28 @@ export default function App() {
     soundEffects.setMuted(nextMuted);
   };
 
-  const handleSelectUnit = (unit: UnitRealm) => {
+  const handleSelectUnit = (unit: UnitRealm, section: UnitSection = 'vocab') => {
     setSelectedUnit(unit);
-    setCurrentView('flashcards');
+    setUnitInitialSection(section);
+    setCurrentView('unit-hub');
+  };
+
+  const handleShowToast = (title: string, subtitle: string, icon: string = '🏆') => {
+    setToastData({
+      id: String(Date.now()),
+      title,
+      subtitle,
+      icon,
+      type: 'achievement'
+    });
+  };
+
+  const handleDeductHp = (amount: number) => {
+    setProfile((prev) => ({
+      ...prev,
+      hp: Math.max(10, prev.hp - amount), // Keep at least 10 HP to encourage continuation
+      xp: Math.max(0, prev.xp - 5) // Trừ nhẹ 5 công lực khi trả lời sai
+    }));
   };
 
   const handleAddXp = (amount: number) => {
@@ -155,7 +196,11 @@ export default function App() {
       prev.map((q) => (q.id === 'q2' ? { ...q, current: 1, completed: true } : q))
     );
 
-    setCurrentView('map');
+    // Show achievement celebration toast (non-intrusive)
+    handleShowToast(
+      '🏆 Trảm Ma Đắc Thắng!',
+      `Đại phá thành công đầu lĩnh ${selectedUnit.bossName}! Khai mở cảnh giới tiếp theo!`
+    );
   };
 
   const handleSendLove = (friendId: string) => {
@@ -205,6 +250,8 @@ export default function App() {
     setQuests((prev) =>
       prev.map((q) => (q.id === questId ? { ...q, claimed: true } : q))
     );
+
+    handleShowToast('📜 Hoàn Thành Nhiệm Vụ!', `Thu nhận +${quest.xpReward} Công Lực từ Sư Môn!`);
   };
 
   return (
@@ -217,7 +264,7 @@ export default function App() {
         onOpenFriends={() => setIsFriendsOpen(true)}
         onOpenQuests={() => setIsQuestsOpen(true)}
         onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
-        onOpenSupabase={() => setIsSupabaseOpen(true)}
+        onOpenWeakReview={() => setCurrentView('weak-review')}
         onReturnToMap={() => setCurrentView('map')}
         isMuted={isMuted}
         onToggleMute={handleToggleMute}
@@ -246,35 +293,36 @@ export default function App() {
               grade={selectedGrade}
               profile={profile}
               onSelectUnit={handleSelectUnit}
+              onOpenWeakReview={() => setCurrentView('weak-review')}
             />
           </>
         )}
 
-        {currentView === 'flashcards' && (
-          <Flashcards
+        {currentView === 'unit-hub' && (
+          <UnitHub
+            key={`${selectedUnit.id}-${unitInitialSection}`}
             unit={selectedUnit}
-            onProceedToPractice={() => setCurrentView('practice')}
-            onBackToMap={() => setCurrentView('map')}
             profile={profile}
-          />
-        )}
-
-        {currentView === 'practice' && (
-          <PracticeArena
-            unit={selectedUnit}
-            onProceedToBoss={() => setCurrentView('boss')}
-            onBackToFlashcards={() => setCurrentView('flashcards')}
+            initialSection={unitInitialSection}
+            onBackToMap={() => setCurrentView('map')}
+            onSelectUnit={(nextU) => {
+              setSelectedUnit(nextU);
+              setUnitInitialSection('vocab');
+            }}
             onAddXp={handleAddXp}
-            profile={profile}
+            onDeductHp={handleDeductHp}
+            onVictory={handleVictory}
+            onShowToast={handleShowToast}
+            onOpenGlobalWeakReview={() => setCurrentView('weak-review')}
           />
         )}
 
-        {currentView === 'boss' && (
-          <BossBattle
-            unit={selectedUnit}
+        {currentView === 'weak-review' && (
+          <WeakReviewArena
             profile={profile}
-            onVictory={handleVictory}
             onBackToMap={() => setCurrentView('map')}
+            onAddXp={handleAddXp}
+            onShowAchievementToast={handleShowToast}
           />
         )}
       </main>
@@ -290,11 +338,31 @@ export default function App() {
               • Tam Niên Anh Ngữ – Nhất Thống Võ Lâm
             </span>
           </div>
-          <div className="text-[11px] text-neutral-400 font-serif-wuxia">
-            Cảm hứng từ cô giáo Hà Ánh Phượng • Khung chương trình THPT Global Success 10 - 11 - 12
+
+          <div className="flex items-center gap-4 text-[11px] text-neutral-400 font-serif-wuxia">
+            <span>Cảm hứng từ cô giáo Hà Ánh Phượng • Khung chương trình THPT Global Success 10 - 11 - 12</span>
+            {/* Discreet link for teacher/admin access */}
+            <button
+              onClick={() => setIsAdminOpen(true)}
+              className="text-neutral-600 hover:text-amber-400/80 text-[10px] underline cursor-pointer transition-colors"
+              title="Khu vực sư phạm dành cho giáo viên"
+            >
+              Quản Trị Sư Phạm
+            </button>
           </div>
         </div>
       </footer>
+
+      {/* Non-intrusive Achievement / Congratulation Toast */}
+      <AchievementToast
+        toast={toastData}
+        onClose={() => setToastData(null)}
+      />
+
+      {/* Admin Dashboard Modal for Cô Phượng */}
+      {isAdminOpen && (
+        <AdminDashboard onClose={() => setIsAdminOpen(false)} />
+      )}
 
       {/* Modals */}
       <AvatarStudioModal
@@ -333,11 +401,6 @@ export default function App() {
         isOpen={isLeaderboardOpen}
         onClose={() => setIsLeaderboardOpen(false)}
         profile={profile}
-      />
-
-      <SupabaseModal
-        isOpen={isSupabaseOpen}
-        onClose={() => setIsSupabaseOpen(false)}
       />
 
       {/* Cửa sổ đặt tên & Điều hướng nhanh */}

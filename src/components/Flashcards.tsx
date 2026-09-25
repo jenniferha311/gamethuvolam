@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { UnitRealm, VocabularyItem, UserProfile } from '../types/game';
-import { Volume2, RotateCw, CheckCircle2, ChevronLeft, ChevronRight, BookOpen, Sparkles, Sword, FileText, ArrowRight } from 'lucide-react';
+import { Volume2, RotateCw, CheckCircle2, ChevronLeft, ChevronRight, BookOpen, Sparkles, Sword, FileText, ArrowRight, Check, AlertCircle } from 'lucide-react';
 import { soundEffects } from '../lib/audio';
+import { saveWeakQuestion } from '../lib/storage';
 
 interface FlashcardsProps {
   unit: UnitRealm;
@@ -20,12 +21,15 @@ export const Flashcards: React.FC<FlashcardsProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [masteredWords, setMasteredWords] = useState<string[]>([]);
+  const [unmasteredWords, setUnmasteredWords] = useState<string[]>([]);
+  const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
 
   const vocab = unit.vocabulary;
   const currentItem: VocabularyItem = vocab[currentIndex];
 
   const handleNext = () => {
     setIsFlipped(false);
+    setFeedbackMsg(null);
     if (currentIndex < vocab.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }
@@ -33,9 +37,56 @@ export const Flashcards: React.FC<FlashcardsProps> = ({
 
   const handlePrev = () => {
     setIsFlipped(false);
+    setFeedbackMsg(null);
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     }
+  };
+
+  const handleMarkRemembered = () => {
+    soundEffects.playHeartChime();
+    if (!masteredWords.includes(currentItem.id)) {
+      setMasteredWords((prev) => [...prev, currentItem.id]);
+    }
+    setUnmasteredWords((prev) => prev.filter((id) => id !== currentItem.id));
+    setFeedbackMsg('Đã ghi nhớ khẩu quyết này!');
+    setTimeout(() => {
+      if (currentIndex < vocab.length - 1) {
+        handleNext();
+      }
+    }, 500);
+  };
+
+  const handleMarkForgotten = () => {
+    soundEffects.playDamageTaken();
+    if (!unmasteredWords.includes(currentItem.id)) {
+      setUnmasteredWords((prev) => [...prev, currentItem.id]);
+    }
+    setMasteredWords((prev) => prev.filter((id) => id !== currentItem.id));
+
+    // Save automatically into Weak Questions for Retrieval Practice
+    saveWeakQuestion({
+      id: `vocab_${currentItem.id}`,
+      unitId: unit.id,
+      unitTitle: unit.realmName,
+      grade: unit.grade,
+      prompt: `Từ vựng cần củng cố: "${currentItem.word}" (${currentItem.ipa}) - ${currentItem.partOfSpeech}. Hãy chọn ý nghĩa chuẩn xác nhất:`,
+      options: [
+        currentItem.meaningVi,
+        'Hành động không liên quan trong ngữ cảnh',
+        'Một trạng thái tâm lý đối lập hoàn toàn',
+        'Khái niệm mang ý nghĩa tiêu cực'
+      ],
+      correctAnswer: currentItem.meaningVi,
+      explanation: `Từ "${currentItem.word}" có nghĩa là: "${currentItem.meaningVi}". Khẩu quyết: ${currentItem.collocation || currentItem.example}`
+    });
+
+    setFeedbackMsg('Đã lưu vào danh sách "🔥 LUYỆN LẠI ĐIỂM YẾU"!');
+    setTimeout(() => {
+      if (currentIndex < vocab.length - 1) {
+        handleNext();
+      }
+    }, 700);
   };
 
   const toggleMastery = (wordId: string) => {
@@ -270,6 +321,11 @@ export const Flashcards: React.FC<FlashcardsProps> = ({
                     <p className="text-xs sm:text-sm text-neutral-300 italic font-serif-wuxia">
                       "{currentItem.example}"
                     </p>
+                    {currentItem.exampleVi && (
+                      <p className="text-xs text-amber-200/90 font-serif-wuxia mt-1 pt-1 border-t border-white/10">
+                        👉 {currentItem.exampleVi}
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
@@ -280,6 +336,64 @@ export const Flashcards: React.FC<FlashcardsProps> = ({
                 <span>Chạm để lật 🔄</span>
               </div>
             </div>
+          </div>
+
+          {/* Feedback banner if marked */}
+          {feedbackMsg && (
+            <div className="mb-4 py-2 px-4 rounded-xl bg-amber-950/70 border border-amber-600/50 text-amber-200 text-xs font-mono font-bold flex items-center justify-center gap-2 animate-fadeIn">
+              <Sparkles className="w-4 h-4 text-amber-400 animate-spin" />
+              <span>{feedbackMsg}</span>
+            </div>
+          )}
+
+          {/* Flashcard Action Buttons: ĐÃ NHỚ & CHƯA NHỚ */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-6">
+            <button
+              onClick={() => {
+                setIsFlipped(!isFlipped);
+                soundEffects.playSwordSlash();
+              }}
+              className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-xs font-bold text-neutral-200 cursor-pointer shadow transition-all active:scale-95"
+            >
+              <RotateCw className="w-4 h-4 text-amber-400" />
+              <span>Lật Thẻ</span>
+            </button>
+
+            <button
+              onClick={handleMarkRemembered}
+              className={`flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border text-xs font-bold font-mono cursor-pointer shadow transition-all active:scale-95 ${
+                masteredWords.includes(currentItem.id)
+                  ? 'bg-emerald-800 border-emerald-400 text-white'
+                  : 'bg-emerald-950/80 hover:bg-emerald-900 border-emerald-600/80 text-emerald-200'
+              }`}
+            >
+              <Check className="w-4 h-4 text-emerald-400" />
+              <span>ĐÃ NHỚ</span>
+            </button>
+
+            <button
+              onClick={handleMarkForgotten}
+              className={`flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border text-xs font-bold font-mono cursor-pointer shadow transition-all active:scale-95 ${
+                unmasteredWords.includes(currentItem.id)
+                  ? 'bg-rose-800 border-rose-400 text-white'
+                  : 'bg-rose-950/80 hover:bg-rose-900 border-rose-600/80 text-rose-200'
+              }`}
+              title="Lưu vào Luyện Lại Điểm Yếu"
+            >
+              <AlertCircle className="w-4 h-4 text-rose-400" />
+              <span>CHƯA NHỚ</span>
+            </button>
+
+            <button
+              onClick={() => {
+                soundEffects.playVictoryFanfare();
+                onProceedToPractice();
+              }}
+              className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-wuxia font-bold text-xs text-neutral-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 border border-amber-300 shadow cursor-pointer transition-all active:scale-95"
+            >
+              <Sword className="w-4 h-4" />
+              <span>Luyện Công →</span>
+            </button>
           </div>
 
           {/* Navigation Controls */}
@@ -303,17 +417,9 @@ export const Flashcards: React.FC<FlashcardsProps> = ({
               </button>
             </div>
 
-            {/* Proceed to Practice Button */}
-            <button
-              onClick={() => {
-                soundEffects.playVictoryFanfare();
-                onProceedToPractice();
-              }}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-wuxia font-bold text-xs sm:text-sm text-amber-200 bg-gradient-to-r from-red-800 to-amber-700 hover:from-red-700 hover:to-amber-600 border border-amber-400 shadow-lg cursor-pointer transition-all hover:scale-105"
-            >
-              <Sword className="w-4 h-4 text-amber-300" />
-              <span>Tiến Vào Luyện Công (Bước 2) →</span>
-            </button>
+            <div className="text-xs text-neutral-400 font-mono">
+              Từ {currentIndex + 1} / {vocab.length}
+            </div>
           </div>
         </>
       )}

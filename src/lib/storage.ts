@@ -1,4 +1,4 @@
-import { UserProfile, Friend, DailyQuest, LeaderboardEntry } from '../types/game';
+import { UserProfile, Friend, DailyQuest, LeaderboardEntry, Grade } from '../types/game';
 import { PLAYER_AVATARS, getTitleForLevel } from '../data/characters';
 
 const STORAGE_KEY = 'phuong_chick_wulin_profile';
@@ -286,3 +286,101 @@ export function generateLeaderboard(currentProfile: UserProfile, activeTab: 'all
     rank: idx + 1
   }));
 }
+
+export interface WeakQuestionItem {
+  id: string;
+  unitId: string;
+  unitTitle: string;
+  grade: Grade;
+  prompt: string;
+  options: string[];
+  correctAnswer: string;
+  explanation: string;
+  wrongCount: number;
+  consecutiveCorrect: number;
+  mastered: boolean;
+  lastFailedAt: string;
+}
+
+const WEAK_QUESTIONS_KEY = 'wulin_weak_questions_v1';
+
+export function getWeakQuestions(): WeakQuestionItem[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(WEAK_QUESTIONS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveWeakQuestion(item: {
+  id: string;
+  unitId: string;
+  unitTitle: string;
+  grade: Grade;
+  prompt: string;
+  options: string[];
+  correctAnswer: string;
+  explanation: string;
+}): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const list = getWeakQuestions();
+    const existingIdx = list.findIndex((q) => q.id === item.id || q.prompt === item.prompt);
+    if (existingIdx >= 0) {
+      list[existingIdx].wrongCount += 1;
+      list[existingIdx].consecutiveCorrect = 0;
+      list[existingIdx].mastered = false;
+      list[existingIdx].lastFailedAt = new Date().toISOString();
+    } else {
+      list.push({
+        ...item,
+        wrongCount: 1,
+        consecutiveCorrect: 0,
+        mastered: false,
+        lastFailedAt: new Date().toISOString()
+      });
+    }
+    localStorage.setItem(WEAK_QUESTIONS_KEY, JSON.stringify(list));
+  } catch (e) {
+    console.warn('saveWeakQuestion error', e);
+  }
+}
+
+export function recordWeakQuestionResult(id: string, isCorrect: boolean): WeakQuestionItem | undefined {
+  if (typeof window === 'undefined') return undefined;
+  try {
+    const list = getWeakQuestions();
+    const item = list.find((q) => q.id === id);
+    if (!item) return undefined;
+
+    if (isCorrect) {
+      item.consecutiveCorrect += 1;
+      if (item.consecutiveCorrect >= 2) {
+        item.mastered = true;
+      }
+    } else {
+      item.consecutiveCorrect = 0;
+      item.wrongCount += 1;
+      item.mastered = false;
+      item.lastFailedAt = new Date().toISOString();
+    }
+    localStorage.setItem(WEAK_QUESTIONS_KEY, JSON.stringify(list));
+    return item;
+  } catch (e) {
+    console.warn('recordWeakQuestionResult error', e);
+    return undefined;
+  }
+}
+
+export function removeWeakQuestion(id: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const list = getWeakQuestions().filter((q) => q.id !== id);
+    localStorage.setItem(WEAK_QUESTIONS_KEY, JSON.stringify(list));
+  } catch (e) {
+    console.warn('removeWeakQuestion error', e);
+  }
+}
+

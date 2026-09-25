@@ -204,6 +204,11 @@ class WuxiaSoundEffects {
     }
   }
 
+  // Correct Answer Bell
+  public playCorrectAnswer() {
+    this.playHeartChime();
+  }
+
   // Text-To-Speech for English vocabulary pronunciation using browser SpeechSynthesis
   public speakEnglish(text: string) {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
