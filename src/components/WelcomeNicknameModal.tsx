@@ -13,15 +13,6 @@ interface WelcomeNicknameModalProps {
   onOpenLeaderboard?: () => void;
 }
 
-const EXAMPLE_NICKNAMES = [
-  'Minh Anh',
-  'KietVan',
-  'Dragon_09',
-  'EnglishMaster',
-  'Lệnh Hồ Xung',
-  'Thanh Phong'
-];
-
 export const WelcomeNicknameModal: React.FC<WelcomeNicknameModalProps> = ({
   isOpen,
   onClose,
@@ -52,12 +43,6 @@ export const WelcomeNicknameModal: React.FC<WelcomeNicknameModalProps> = ({
     setError('');
     soundEffects.playVictoryFanfare();
     onSaveNickname(trimmed);
-  };
-
-  const handlePickExample = (example: string) => {
-    setName(example);
-    setError('');
-    soundEffects.playSwordSlash();
   };
 
   const handleLinkToGrade = (grade: 10 | 11 | 12) => {
@@ -143,7 +128,7 @@ export const WelcomeNicknameModal: React.FC<WelcomeNicknameModalProps> = ({
                   setName(e.target.value);
                   if (error) setError('');
                 }}
-                placeholder="VD: Minh Anh, KietVan, Dragon_09, EnglishMaster..."
+                placeholder="Nhập tên của bạn (tối đa 24 ký tự)..."
                 className={`w-full px-4 py-3 rounded-xl bg-neutral-900/90 border text-base text-amber-100 placeholder:text-neutral-500 font-medium focus:outline-none transition-all ${
                   error
                     ? 'border-red-500 ring-2 ring-red-500/40 bg-red-950/20'
@@ -159,25 +144,6 @@ export const WelcomeNicknameModal: React.FC<WelcomeNicknameModalProps> = ({
                 <span>{error}</span>
               </div>
             )}
-          </div>
-
-          {/* Quick pick suggestion pills */}
-          <div>
-            <span className="text-[11px] text-neutral-400 font-serif-wuxia block mb-1">
-              Gợi ý tên hay:
-            </span>
-            <div className="flex flex-wrap gap-1.5">
-              {EXAMPLE_NICKNAMES.map((example) => (
-                <button
-                  type="button"
-                  key={example}
-                  onClick={() => handlePickExample(example)}
-                  className="text-[11px] px-2.5 py-0.5 rounded-lg bg-neutral-900/80 border border-neutral-700 hover:border-amber-400 text-neutral-300 hover:text-amber-200 transition-colors font-mono"
-                >
-                  +{example}
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Action Buttons */}

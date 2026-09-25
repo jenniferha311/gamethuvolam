@@ -340,7 +340,7 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-4 text-[11px] text-neutral-400 font-serif-wuxia">
-            <span>Cảm hứng từ cô giáo Hà Ánh Phượng • Khung chương trình THPT Global Success 10 - 11 - 12</span>
+            <span>Game được thiết kế bởi cô giáo Hà Ánh Phượng dựa vào khung chương trình Tiếng Anh THPT Global Success và các nhân vật thầy cô truyền cảm hứng trong cộng đồng Thầy cô không ngừng học- TNSL</span>
             {/* Discreet link for teacher/admin access */}
             <button
               onClick={() => setIsAdminOpen(true)}

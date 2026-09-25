@@ -57,8 +57,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 THPT 10 - 11 - 12
               </span>
             </div>
-            <p className="text-[11px] text-amber-400/90 font-serif-wuxia tracking-wide hidden sm:block">
-              Cảm hứng từ cô giáo HÀ ÁNH PHƯỢNG - khung chương trình THPT Global Success 10-11-12
+            <p className="text-[10px] sm:text-[11px] text-amber-300/90 font-serif-wuxia tracking-normal leading-tight hidden sm:block max-w-xl lg:max-w-2xl">
+              Game được thiết kế bởi cô giáo Hà Ánh Phượng dựa vào khung chương trình Tiếng Anh THPT Global Success và các nhân vật thầy cô truyền cảm hứng trong cộng đồng Thầy cô không ngừng học- TNSL
             </p>
           </div>
         </div>
